@@ -4,7 +4,9 @@ module top_tb ();
 `include "testbench/init_imem.sv"
 `include "testbench/init_dmem.sv"
 `include "testbench/boot_code.sv"
-import "DPI-C" function void init (string test_name);
+
+// following function are decalred in /mips/iss/main.h
+import "DPI-C" function void init (string test_name); 
 import "DPI-C" function void run (int cycles);
 import "DPI-C" function int compare_r (int pc, int instr, int rd, int rs, int rt, int rd_val, int rs_val, int rt_val);
 import "DPI-C" function int compare_i (int pc, int instr, int rs, int rt, int rs_val, int rt_val);
