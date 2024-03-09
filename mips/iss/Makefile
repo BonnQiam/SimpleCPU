@@ -6,7 +6,8 @@ hex: src/*.c
 	gcc -fPIC $(CFLAGS) -shared -g -O2 $^ -o lib$@.so
 
 iss: src/*.c
-	gcc -fPIC $(CFLAGS) -shared -g -m32 -O2 $^ -o $@.so
+#	gcc -fPIC $(CFLAGS) -shared -g -m32 -O2 $^ -o $@.so
+	gcc -fPIC $(CFLAGS) -shared -g -m64 -O2 $^ -o $@.so
 
 sim: src/*.c
 	gcc $(CFLAGS) -g -O2 $^ -o $@
