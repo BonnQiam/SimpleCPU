@@ -35,30 +35,27 @@ extern int prev_pc;
 FILE* pc_hex_val;
 FILE* instr_hex_val;
 
-#define nums_r_type 5
-#define nums_i_type 5
-
-const int funct_val_r_type[nums_i_type] = {
-    ADD,        /*ADDU,*/       AND,
+const int funct_val_r_type[13] = {
+    ADD,        ADDU,       AND,
     /*DIV,        DIVU,       JALR,*/
     /*JR,         MFHI,       MFLO,*/
     /*MTHI,       MTLO,       MULT,*/
-    /*MULTU,*/    /*NOR,*/        OR,
-    /*SLL,*/        /*SLLV,*/       SLT,
-    /*SLTU,*/       /*SRA,*/        /*SRAV,*/
-    /*SRL,*/        /*SRLV,*/       SUB,
-    /*SUBU,*/       /*SYSCALL,*/    /*XOR*/
+    /*MULTU,*/      NOR,        OR,
+    SLL,        /*SLLV,*/       SLT,
+    SLTU,       SRA,        /*SRAV,*/
+    SRL,        /*SRLV,*/       SUB,
+    SUBU,       /*SYSCALL,*/    XOR
 };
-const char* funct_str_r_type[nums_i_type] = {
-    "ADD",        /*"ADDU",*/       "AND",
+const char* funct_str_r_type[13] = {
+    "ADD",        "ADDU",       "AND",
     /*DIV,        DIVU,       JALR,*/
     /*JR,         MFHI,       MFLO,*/
     /*MTHI,       MTLO,       MULT,*/
-    /*MULTU,      "NOR",*/        "OR",
-    /*"SLL",*/        /*SLLV,*/       "SLT",
-    /*"SLTU",       "SRA",*/        /*SRAV,*/
-    /*"SRL",*/        /*SRLV,*/       "SUB",
-    /*"SUBU",*/       /*SYSCALL,*/    /*"XOR"*/
+    /*MULTU,*/      "NOR",        "OR",
+    "SLL",        /*SLLV,*/       "SLT",
+    "SLTU",       "SRA",        /*SRAV,*/
+    "SRL",        /*SRLV,*/       "SUB",
+    "SUBU",       /*SYSCALL,*/    "XOR"
 };
 /*const char* funct_str_r_type[27] = {
     "ADD",        "ADDU",       "AND",
@@ -71,25 +68,25 @@ const char* funct_str_r_type[nums_i_type] = {
     "SRL",        "SRLV",       "SUB",
     "SUBU",       "SYSCALL",    "XOR"
 };*/
-const int opcode_val_i_type[nums_i_type] = {
-    ADDI,       /*ADDIU,      ANDI,*/
-    BEQ,        /*BGEZ,       BGEZAL,*/
-    /*BGTZ,       BLEZ,       BLTZ,*/
-    /*BLTZAL,*/     BNE,        /*LB,
+const int opcode_val_i_type[17] = {
+    ADDI,       ADDIU,      ANDI,
+    BEQ,        BGEZ,       BGEZAL,
+    BGTZ,       BLEZ,       BLTZ,
+    BLTZAL,     BNE,        /*LB,
     LBU,        LH,         LHU,
-    LUI,*/        LW,         /*ORI,*/
+    LUI,*/        LW,         ORI,
     /*SB,         SH,*/         SW,
-    /*SLTI,       SLTIU,      XORI*/
+    SLTI,       SLTIU,      XORI
 };
-const char* opcode_str_i_type[nums_i_type] = {
-    "ADDI",       /*"ADDIU",*/      /*"ANDI",*/
-    "BEQ",        /*"BGEZ",       "BGEZAL",*/
-    /*"BGTZ",       "BLEZ",       "BLTZ",*/
-    /*"BLTZAL",*/     "BNE",        /*LB,
+const char* opcode_str_i_type[17] = {
+    "ADDI",       "ADDIU",      "ANDI",
+    "BEQ",        "BGEZ",       "BGEZAL",
+    "BGTZ",       "BLEZ",       "BLTZ",
+    "BLTZAL",     "BNE",        /*LB,
     LBU,        LH,         LHU,
-    LUI,*/        "LW",         /*"ORI",*/
+    LUI,*/        "LW",         "ORI",
     /*SB,         SH,*/         "SW",
-    /*"SLTI",       "SLTIU",      "XORI"*/
+    "SLTI",       "SLTIU",      "XORI"
 };
 /*const char* opcode_str_i_type[24] = {
     "ADDI",       "ADDIU",      "ANDI",
@@ -101,11 +98,11 @@ const char* opcode_str_i_type[nums_i_type] = {
     "SB",         "SH",         "SW",
     "SLTI",       "SLTIU",      "XORI"
 };*/
-const int opcode_val_j_type[1] = {
-    J//,          /*JAL*/
+const int opcode_val_j_type[2] = {
+    J,          JAL
 };
-const char* opcode_str_j_type[1] = {
-    "J"//,          /*"JAL"*/
+const char* opcode_str_j_type[2] = {
+    "J",          "JAL"
 };
 /*const char* register_str[] = {	
     "$0",       "$at",      "$v0",  

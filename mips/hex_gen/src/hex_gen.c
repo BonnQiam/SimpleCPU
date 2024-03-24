@@ -103,7 +103,7 @@ void gen_r_instr (int vopt, ...) {
         shamt   = va_arg (valist, int);
         va_end (valist);
 
-        for (i = 0; i < 13; i++) {
+        for (i = 0; i < nums_r_type; i++) {
             if (funct_val_r_type[i] == funct) {
                 funct_idx = i;
                 break;
@@ -111,7 +111,7 @@ void gen_r_instr (int vopt, ...) {
         }
     }
     else {
-        funct_idx   = rand()%13;
+        funct_idx   = rand()%nums_r_type;
         funct       = funct_val_r_type [funct_idx];
         rs          = rand ()%32;
         rt          = rand ()%32;
@@ -180,7 +180,7 @@ void gen_i_instr (int vopt, ...) {
         imm     = va_arg (valist, int);
         va_end (valist);
 
-        for (i = 0; i < 17; i++) {
+        for (i = 0; i < nums_i_type; i++) {
             if (opcode_val_i_type[i] == opcode) {
                 opcode_idx = i;
                 break;
@@ -188,7 +188,7 @@ void gen_i_instr (int vopt, ...) {
         }
     }
     else {
-        opcode_idx  = rand()%17;
+        opcode_idx  = rand()%nums_i_type;
         opcode      = opcode_val_i_type [opcode_idx];
         rt          = rand() % 32;
     RS:

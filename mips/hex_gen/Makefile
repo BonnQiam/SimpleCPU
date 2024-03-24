@@ -3,10 +3,12 @@ CFLAGS = -Wall -I $(INC_DIR)
 DEPS = mips_instr_defines.h
 
 all: src/*.c
-	gcc $(CFLAGS) -g -O2 $^ -o hex_gen -l :lib/libhex.so -D GEN_USER_TEST
+#	gcc $(CFLAGS) -g -O2 $^ -o hex_gen -l :lib/libhex.so -D GEN_USER_TEST
+	gcc $(CFLAGS) -g -O2 $^ -o hex_gen -L lib -l hex -D GEN_USER_TEST
 
 hex: src/*.c
 	gcc $(CFLAGS) -g -O2 $^ -o hex_gen -l :lib/libhex.so
+#	gcc $(CFLAGS) -g -O2 $^ -o hex_gen -L -llibhex
 
 .PHONY: clean
 clean:
