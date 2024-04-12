@@ -5,19 +5,12 @@ module RegFile (clk, readreg1, readreg2, writereg, writedata, RegWrite, readdata
   output [31:0] readdata1, readdata2;
 
   reg [31:0] regfile [31:0];
-  integer i;
-  
-  initial begin
-    for (i=1; i<32; i=i+1)   
-    begin
-          regfile[i]=i*10;
-    end
-  end
   
   always @(posedge clk)
   begin
 	  if (RegWrite) 
-	 	  regfile[writereg] <= writedata;
+	 	  //regfile[writereg] <= writedata;
+      regfile[writereg] <= writedata;
     regfile[0]=0;
   end
 

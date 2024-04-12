@@ -410,6 +410,9 @@ void print_to_file (FILE* pc_hex_val, FILE* instr_hex_val) {
 }
 
 int main (int argc, char* argv[]) {
+     /* 设置种子 */
+    srand((unsigned)time(NULL));
+
     int num_r = 0;      /* Number of R-type instructions    */
     int num_i = 0;      /* Number of I-type instructions    */
     int num_j = 0;      /* Number of J-type instructions    */

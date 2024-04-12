@@ -1,11 +1,18 @@
-module PCRegWrite(in,out,enable);
+module PCRegWrite(in,out,enable,clk,reset);
 input [31:0] in;
-input enable;
+input enable,clk, reset;
 output reg [31:0] out;
 
-always @(*) begin
+always @(posedge clk) begin
+    if (reset) begin
+        out <= 32'b0;
+    end
+    else begin
+
     if (enable) begin
-        out = in;
+        out <= in;
+    end 
+
     end
 end
 

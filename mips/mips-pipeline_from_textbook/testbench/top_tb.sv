@@ -71,34 +71,33 @@ import "DPI-C" function int compare_j (int pc, int instr, int rt, int rt_val);
 
     // FETCH
     // // signals tapped from the FETCH stage
-    assign pc_fetch          = T1.PC;
     assign instr_fetch       = T1.instrWire;
 
     // ISSUE
     // signals tapped from the ISS stage
-    assign is_r_type_iss     = T1.u1.is_r_type;
-    assign is_i_type_iss     = T1.u1.is_i_type;
-    assign is_j_type_iss     = T1.u1.is_j_type;
+    assign is_r_type_wb = T1.is_r_type_WB;
+    assign is_i_type_wb = T1.is_i_type_WB;
+    assign is_j_type_wb = T1.is_j_type_WB;
 
-    assign rs_iss            = T1.instrWireID[`rs];
-    assign rt_iss            = T1.instrWireID[`rt];
-    assign rd_iss            = T1.instrWireID[`rd];
+    assign rs_wb            = T1.instrWireWB[`rs];
+    assign rt_wb            = T1.instrWireWB[`rt];
+    assign rd_wb            = T1.instrWireWB[`rd];
 
     // WRITE-BACK
     // signals tapped from the WB stage
-    assign rt_val_dest_wb    = T1.RegWriteWB ? T1.writeRegWireWB : rt_val_wb;
-    assign rd_val_dest_wb    = T1.RegWriteWB ? T1.writeRegWireWB : rd_val_wb;
-    
-    //assign instr_retired_wb  = T1.controlStall & T1.dataStall;
-    assign instr_retired_wb = (pc_wb == 32'b0) ?
-        ((instr_wb != instr_mem) ? 1 : 0) :
-            (
-                (T1.dataStall & T1. controlStall) ? 
-                    1 : (
-                        (instr_wb != instr_mem) ? 1 : 0
-                    )
-            );
+    assign rt_val_dest_wb    = T1.RegWriteWB ? T1.WBData : rt_val_wb;
+    assign rd_val_dest_wb    = T1.RegWriteWB ? T1.WBData : rd_val_wb;
 
+    assign instr_retired_wb  = T1.instr_retired & (T1.instrWireWB != 32'b0) & (T1.instrWireMEM != T1.instrWireWB);
+
+    assign pc_fetch          = T1.PC;
+
+    /*
+    assign instr_retired_wb  = (pc_wb == 32'b0) ? ( (T1.instrWireWB != T1.instrWireMEM) & (T1.instrWireWB != 32'b0)) : 
+        (
+            (T1.dataStall & T1.controlStall) ? T1.instr_retired :( (T1.valid_MEM == 0) & T1.instr_retired)
+        );
+    */
     assign rd_val_wb         = T1.u11.regfile[rd_wb];
     assign rs_val_wb         = T1.u11.regfile[rs_wb];
     assign rt_val_wb         = T1.u11.regfile[rt_wb];
@@ -136,116 +135,73 @@ import "DPI-C" function int compare_j (int pc, int instr, int rt, int rt_val);
         # (T/2);
     end
 
-    // ISSUE
-    always @ (posedge clk_tb)
-    begin
-        pc_iss      <=  pc_fetch;
-        instr_iss   <=  instr_fetch;
-    end
-
-    // EXECUTE
-    always @ (posedge clk_tb)
-    begin
-        //$display ("RD is %x\tRS is %x\tRT is %x\n", rd_iss, rs_iss, rt_iss);
-        pc_ex           <=  pc_iss;
-        instr_ex        <=  instr_iss;
-        is_r_type_ex    <=  is_r_type_iss;
-        is_i_type_ex    <=  is_i_type_iss;
-        is_j_type_ex    <=  is_j_type_iss;
-        rs_ex           <=  rs_iss;
-        rt_ex           <=  rt_iss;
-        rd_ex           <=  rd_iss;
-    end
-
-    // MEMORY
-    always @ (posedge clk_tb)
-    begin
-        pc_mem          <=  pc_ex;
-        instr_mem       <=  instr_ex;
-        is_r_type_mem   <=  is_r_type_ex;
-        is_i_type_mem   <=  is_i_type_ex;
-        is_j_type_mem   <=  is_j_type_ex;
-        rs_mem          <=  rs_ex;
-        rt_mem          <=  rt_ex;
-        rd_mem          <=  rd_ex;
-    end
-
-    // WRITE-BACK
-    always @ (posedge clk_tb)
-    begin
-        pc_wb           <=  pc_mem;
-        instr_wb        <=  instr_mem;
-        is_r_type_wb    <=  is_r_type_mem;
-        is_i_type_wb    <=  is_i_type_mem;
-        is_j_type_wb    <=  is_j_type_mem;
-        rs_wb           <=  rs_mem;
-        rt_wb           <=  rt_mem;
-        rd_wb           <=  rd_mem;
-    end
-
-    integer i;
-
     always @ (posedge clk_tb) begin
+        $display("Next_PC: %x", T1.NPCValue);
 
-        $display("NPCValue: %x", T1.NPCValue);
         $display("pc_fetch: %x", pc_fetch);
         $display("instr_fetch: %x", instr_fetch);
-        $display("Real instrWireWB: %x", T1.instrWireWB);
+        
 
         $display("dataStall: %b", T1.dataStall);
         $display("controlStall: %b", T1.controlStall);
+
+        $display("instrWireHazard: %x", T1.instrWireHazard);
+        $display("instrWireID: %x", T1.instrWireID);
+        $display("instrWireIDhazard: %x", T1.instrWireIDhazard);
+        $display("instrWireEX: %x", T1.instrWireEX);
+        $display("instrWireMEM: %x", T1.instrWireMEM);
+        $display("instrWireWB: %x", T1.instrWireWB);
+
+        $display("valid_ID: %b", T1.valid_ID);
+        $display("valid_EX: %b", T1.valid_EX);
+        $display("valid_MEM: %b", T1.valid_MEM);
+        $display("instr_retired: %b", T1.instr_retired);
+        $display("instr_retired_wb: %b", instr_retired_wb);
+
+        $display("pc_IF: %x", T1.PC);
+        $display("pc_IF_Harzard: %x", T1.PC_Hazard);
+        $display("pc_ID: %x", T1.PC_ID);
+        $display("pc_ID_Harzard: %x", T1.PC_ID_Hazard);
+        $display("pc_EX: %x", T1.PC_EX);
+        $display("pc_MEM: %x", T1.PC_MEM);
+        $display("pc_WB: %x", T1.PC_WB);
+        
         $display("==================================");
 
 
-        if (instr_retired_wb)
+
+
+        if (instr_retired_wb & (is_r_type_wb || is_i_type_wb || is_j_type_wb))
         begin
-            $display("dataStall: %b", T1.dataStall);
-            $display("controlStall: %b", T1.controlStall);
-
-            $display("pc_fetch: %x", pc_fetch);
-            $display("instr_fetch: %x", instr_fetch);
-
-            $display("pc_iss: %x", pc_iss);
-            $display("instr_iss: %x", instr_iss);
-            $display("is_r_type_iss: %x", is_r_type_iss);
-            $display("is_i_type_iss: %x", is_i_type_iss);
-            $display("is_j_type_iss: %x", is_j_type_iss);
-
-            $display("pc_ex: %x", pc_ex);
-            $display("instr_ex: %x", instr_ex);
-            $display("is_r_type_ex: %x", is_r_type_ex);
-            $display("is_i_type_ex: %x", is_i_type_ex);
-            $display("is_j_type_ex: %x", is_j_type_ex);
-
-            $display("pc_mem: %x", pc_mem);
-            $display("instr_mem: %x", instr_mem);
-            $display("is_r_type_mem: %x", is_r_type_mem);
-            $display("is_i_type_mem: %x", is_i_type_mem);
-            $display("is_j_type_mem: %x", is_j_type_mem);
-
-            $display("pc_wb: %x", pc_wb);
-            $display("instr_wb: %x", instr_wb);
-            $display("is_r_type_iss_wb: %x", is_r_type_wb);
-            $display("is_i_type_iss_wb: %x", is_i_type_wb);
-            $display("is_j_type_iss_wb: %x", is_j_type_wb);
-
             run (1);
             if (is_r_type_wb) 
             begin
                 $display("Test r type");
-                if (!compare_r (pc_wb, instr_wb, rd_wb, rs_wb, rt_wb, rd_val_dest_wb, rs_val_wb, rt_val_wb))
+
+                $display("%d", rd_wb);
+                $display("%d", rs_wb);
+                $display("%d", rt_wb);
+                $display("%d", rd_val_dest_wb);
+                $display("%d", rs_val_wb);
+                $display("%d", rt_val_wb);
+
+                
+                if (!compare_r (T1.PC_WB, T1.instrWireWB, rd_wb, rs_wb, rt_wb, rd_val_dest_wb, rs_val_wb, rt_val_wb))
+                //if (!compare_r (pc_wb, instr_wb, rd_wb, rs_wb, rt_wb, rd_val_dest_wb, rs_val_wb, rt_val_wb))
                     $fatal(1, "TEST FAILED\n");
             end
             else if (is_i_type_wb)
             begin
                 $display("Test i type");
-                if (!compare_i (pc_wb, instr_wb, rs_wb, rt_wb, rs_val_wb, rt_val_dest_wb))
+                if (!compare_i (T1.PC_WB, T1.instrWireWB, rs_wb, rt_wb, rs_val_wb, rt_val_dest_wb))
+                //if (!compare_i (pc_wb, instr_wb, rs_wb, rt_wb, rs_val_wb, rt_val_dest_wb))
                     $fatal(1, "TEST FAILED\n");
             end
             else if (is_j_type_wb)
             begin
                 $display("Test j type");
-                if (!compare_j (pc_wb, instr_wb, rt_wb, rt_val_dest_wb))
+                if (!compare_j (T1.PC_WB, T1.instrWireWB, rt_wb, rt_val_dest_wb))
+                //if (!compare_j (pc_wb, instr_wb, rt_wb, rt_val_dest_wb))
                     $fatal(1, "TEST FAILED\n");
             end
             else

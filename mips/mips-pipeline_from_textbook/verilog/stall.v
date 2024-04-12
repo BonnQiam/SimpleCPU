@@ -20,6 +20,9 @@ reg [4:0] rs,rt;
 reg [4:0] ws1,ws2,ws3;
 reg res,ret;
 
+reg regular_stall;
+reg Load_Use_stall;
+
 //always @(posedge clk)begin
 always @(*)begin
     if(reset) begin
@@ -168,10 +171,22 @@ always @(*)begin
     else begin
         we3=1'b0;
     end
+
+    regular_stall = (((rs==ws1)&we1) || ((rs==ws2)&we2) || ((rs==ws3)&we3))&res || 
+             (((rt==ws1)&we1) || ((rt==ws2)&we2) || ((rt==ws3)&we3))&ret;
     
-    stall=~( (((rs==ws1)&we1) + ((rs==ws2)&we2) + ((rs==ws3)&we3)) & res + // ID 阶段指令的 rs 寄存器与 EX、MEM、WB 阶段指令的 rd 寄存器重合
-             (((rt==ws1)&we1) + ((rt==ws2)&we2) + ((rt==ws3)&we3)) & ret); // ID 阶段指令的 rt 寄存器与 EX、MEM、WB 阶段指令的 rd 寄存器重合
+    // line 1: ID 阶段指令的 rs 寄存器与 EX、MEM、WB 阶段指令的 rd 寄存器重合
+    // line 2: ID 阶段指令的 rt 寄存器与 EX、MEM、WB 阶段指令的 rd 寄存器重合
+    
+    Load_Use_stall = ((IRD[25:21]==IREX[15:11]) || 
+                    (IRD[25:21]==IRMEM[15:11]) || 
+                    (IRD[25:21]==IRWB[15:11]) || 
+                    (IRD[20:16]==IREX[15:11]) || 
+                    (IRD[20:16]==IRMEM[15:11]) || 
+                    (IRD[20:16]==IRWB[15:11])) && (IRD[25:21]!=5'b0 || IRD[20:16]!=5'b0);
+
     // stall 为 0 时阻塞，为 1 时无阻塞
+    stall = ~(regular_stall | Load_Use_stall );
 
     end
 end
