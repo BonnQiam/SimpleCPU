@@ -1,6 +1,65 @@
 module stallUnit(
                 //clk, 
                 reset,
+                IRD, is_i_type_ID, is_r_type_ID,
+                IREX, is_i_type_EXE, is_r_type_EXE,
+                IRMEM, is_i_type_MEM, is_r_type_MEM,
+                IRWB, is_i_type_WB, is_r_type_WB,
+                stall);
+input reset;
+
+input is_i_type_ID, is_r_type_ID;
+input is_i_type_EXE, is_r_type_EXE;
+input is_i_type_MEM, is_r_type_MEM;
+input is_i_type_WB, is_r_type_WB;
+
+input [31:0] IRD,IREX,IRMEM,IRWB;//指令 4 ID / EX / MEM / WB 阶段
+output reg stall;
+reg stall_ID_EX_r, stall_ID_EX_i,
+    stall_ID_MEM_r, stall_ID_MEM_i, 
+    stall_ID_WB_r, stall_ID_WB_i;
+
+always @(*) begin
+    if(reset) begin
+        stall = 1'b1;
+
+        stall_ID_EX_r = 1'b0;
+        stall_ID_EX_i = 1'b0;
+        stall_ID_MEM_r = 1'b0;
+        stall_ID_MEM_i = 1'b0;
+        stall_ID_WB_r = 1'b0;
+        stall_ID_WB_i = 1'b0;
+    end
+    else begin
+        // when the instruction in the ID stage uses the rs or rt register
+        // of the instruction in the EX, MEM, or WB stage
+        // stall = 1 meaning no stall, stall = 0 meaning stall
+
+        stall_ID_EX_r = IRD[25:21] == IREX[15:11] | IRD[20:16] == IREX[15:11];
+        stall_ID_MEM_r = IRD[25:21] == IRMEM[15:11] | IRD[20:16] == IRMEM[15:11];
+        stall_ID_WB_r = IRD[25:21] == IRWB[15:11] | IRD[20:16] == IRWB[15:11];
+        stall_ID_EX_i = IRD[25:21] == IREX[20:16] | IRD[20:16] == IREX[20:16];
+        stall_ID_MEM_i = IRD[25:21] == IRMEM[20:16] | IRD[20:16] == IRMEM[20:16];
+        stall_ID_WB_i = IRD[25:21] == IRWB[20:16] | IRD[20:16] == IRWB[20:16];
+            
+        stall = ~( stall_ID_EX_r & ((is_i_type_ID | is_r_type_ID) & (is_r_type_EXE)) |
+                 stall_ID_EX_i & (is_i_type_ID | is_r_type_ID) & (is_i_type_EXE) |
+                stall_ID_MEM_r & (is_i_type_ID | is_r_type_ID) & (is_i_type_MEM) |
+                stall_ID_MEM_i & (is_i_type_ID | is_r_type_ID) & (is_i_type_MEM) | 
+                stall_ID_WB_r & (is_i_type_ID | is_r_type_ID) & (is_r_type_WB) |
+                stall_ID_WB_i & (is_i_type_ID | is_r_type_ID) & (is_i_type_WB)
+                );
+    end
+    
+end
+
+endmodule
+
+
+/*
+module stallUnit(
+                //clk, 
+                reset,
                 IRD,
                 IREX,
                 IRMEM,
@@ -20,9 +79,6 @@ reg [4:0] rs,rt;
 reg [4:0] ws1,ws2,ws3;
 reg res,ret;
 
-reg regular_stall;
-reg Load_Use_stall;
-
 //always @(posedge clk)begin
 always @(*)begin
     if(reset) begin
@@ -35,9 +91,7 @@ always @(*)begin
     end
     else begin
 
-    /*********************************
-                ID 阶段的指令是否使用 rs、rt 寄存器
-    **********************************/
+    //            ID 阶段的指令是否使用 rs、rt 寄存器
 
     if(IRD != 32'b0)begin
         rs = IRD[25:21];
@@ -81,9 +135,8 @@ always @(*)begin
         ret=1'b0;
     end
 
-    /*********************************
-                EX 阶段的指令是否使用 rs 寄存器
-    **********************************/
+   
+    //            EX 阶段的指令是否使用 rs 寄存器
     if(IREX != 32'b0)begin
         case(IREX[31:26])//we1,ws1
             //Rtype:opcode 6bit and function 
@@ -121,9 +174,8 @@ always @(*)begin
         we1=1'b0;
     end
 
-    /*********************************
-                MEM 阶段指令是否使用 rd 寄存器
-    **********************************/
+
+    //            MEM 阶段指令是否使用 rd 寄存器
     if(IRMEM != 32'b0)begin
         case(IRMEM[31:26])//we2,ws2
             //Rtype:opcode 6bit and function 6bit
@@ -161,9 +213,8 @@ always @(*)begin
         we2=1'b0;
     end
 
-    /*********************************
-                WB 阶段的指令是否使用 rd 寄存器
-    **********************************/
+    
+    //            WB 阶段的指令是否使用 rd 寄存器
     if(IRWB != 32'b0)begin
         we3=WWBs;
         ws3=regWB;
@@ -172,22 +223,14 @@ always @(*)begin
         we3=1'b0;
     end
 
-    regular_stall = (((rs==ws1)&we1) || ((rs==ws2)&we2) || ((rs==ws3)&we3))&res || 
-             (((rt==ws1)&we1) || ((rt==ws2)&we2) || ((rt==ws3)&we3))&ret;
+    stall = ~( (((rs==ws1)&we1) || ((rs==ws2)&we2) || ((rs==ws3)&we3))&res || 
+             (((rt==ws1)&we1) || ((rt==ws2)&we2) || ((rt==ws3)&we3))&ret);
     
     // line 1: ID 阶段指令的 rs 寄存器与 EX、MEM、WB 阶段指令的 rd 寄存器重合
     // line 2: ID 阶段指令的 rt 寄存器与 EX、MEM、WB 阶段指令的 rd 寄存器重合
-    
-    Load_Use_stall = ((IRD[25:21]==IREX[15:11]) || 
-                    (IRD[25:21]==IRMEM[15:11]) || 
-                    (IRD[25:21]==IRWB[15:11]) || 
-                    (IRD[20:16]==IREX[15:11]) || 
-                    (IRD[20:16]==IRMEM[15:11]) || 
-                    (IRD[20:16]==IRWB[15:11])) && (IRD[25:21]!=5'b0 || IRD[20:16]!=5'b0);
-
     // stall 为 0 时阻塞，为 1 时无阻塞
-    stall = ~(regular_stall | Load_Use_stall );
 
     end
 end
 endmodule
+*/

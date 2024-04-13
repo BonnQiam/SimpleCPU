@@ -36,7 +36,7 @@ FILE* pc_hex_val;
 FILE* instr_hex_val;
 
 #define nums_r_type 4
-#define nums_i_type 8
+#define nums_i_type 7
 
 const int funct_val_r_type[nums_i_type] = {
     ADD,        /*ADDU,*/       AND,

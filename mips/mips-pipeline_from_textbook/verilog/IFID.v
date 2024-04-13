@@ -2,10 +2,10 @@ module IFID(
     clk,reset,
     iInstr,iNextPC,
     oInstr,oNextPC,
-    enable
+    dataStall,controlStall
 );
 
-input clk, reset, enable;
+input clk, reset, dataStall, controlStall;
 input [31:0] iInstr;
 input [31:0] iNextPC;
 
@@ -23,10 +23,22 @@ begin
     end
     else begin
     
-    if(enable) begin
-        oInstr <= iInstr;
-        oNextPC <= iNextPC;
-    end
+        if({dataStall, controlStall} == 2'b11) begin
+            oInstr <= iInstr;
+            oNextPC <= iNextPC;
+        end
+        
+        else if ({dataStall, controlStall} == 2'b10) begin
+            oInstr <= 32'b0;
+            oNextPC <= 32'b0;
+        end
+
+        else if ({dataStall, controlStall} == 2'b01) begin
+            //do nothing
+        end
+        else if ({dataStall, controlStall} == 2'b00) begin
+            //do nothing
+        end
 
     end
 end

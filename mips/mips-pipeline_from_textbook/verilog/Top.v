@@ -7,8 +7,6 @@ wire [31:0] ctrlSignals;
 wire dataStall;
 wire controlStall;
 
-wire [31:0] instrWireIDhazard,instrWireHazard;
-
 /********************************************************
 ************************* IF / fetch ****************************         
 *********************************************************/
@@ -26,9 +24,10 @@ adder32bit u4(32'b100,PC,nextPC);/*IF 加法器*/
 wire [31:0] instrWireID,nextPCID;// 承接自 IF 阶段的信号
 
 IFID p1(clk,reset,
-        instrWireHazard,nextPC,
+        instrWire,nextPC,
         instrWireID,nextPCID,
-        dataStall);// IF-ID 流水线寄存器
+        dataStall,
+        controlStall);// IF-ID 流水线寄存器
 
 /* 控制单元的输出 */
 wire [2:0]  ALUOp;
@@ -59,7 +58,7 @@ controlUnit u1(
 
 assign valid_ID = (is_r_type_ID | is_i_type_ID | is_j_type_ID) & ~reset; 
 
-signExt u2(instrWireID[15:0],outSignEXT);/*ID*/
+signExt u2(instrWireID[15:0],outSignEXT,ALUCtrl, Branch);/*ID*/
 mux2A u10(RegDest,instrWireID[20:16],instrWireID[15:11],writeRegWire);/*ID*/
 
 RegFile u11(clk, instrWireID[25:21], instrWireID[20:16], 
@@ -88,8 +87,7 @@ wire valid_EX;// 当前 EX 阶段是否有效
 
 /* 流水线寄存器 */
 IDEX p2(clk, reset,
-//        instrWireID,
-        instrWireIDhazard,
+        instrWireID,
         RegWrite,ALUSrc,MemRead,MemWrite,MemToReg,Branch,invertzero,Jump,
         ALUCtrl,
         readData1,readData2,
@@ -104,7 +102,8 @@ IDEX p2(clk, reset,
         writeRegWireEX,
         outSignEXTEX,nextPCEX,NPC1EX,
         valid_EX,
-        1'b1);
+        dataStall);
+//        1'b1);
 
 wire [31:0] ALUSrc1;// ALU 输入信号之一
 
@@ -142,7 +141,6 @@ wire valid_MEM;// 当前 MEM 阶段是否有效
 /* 流水线寄存器 */
 EXMEM p3(clk, reset,
         instrWireEX,
-//        instrWireIEXEhazard,
         RegWriteEX,MemReadEX,MemWriteEX,MemToRegEX,BranchEX,invertzero_EX,JumpEX,
         readData2EX,ALUResult,ZeroOut,
         nextPCBranch,NPC1EX,nextPCEX,writeRegWireEX,
@@ -166,23 +164,23 @@ wire [31:0]NPCValue;//最终的 NextPC
 DMemBank u15(MemReadMEM, MemWriteMEM,ALUResultMEM, readData2MEM, outputData);/*MEM*/
 
 assign branch_zero_and_output= ZeroOutMEM & BranchMEM;/*MEM*/
+
 assign branchEnable = (invertzero_MEM) ? ~branch_zero_and_output : branch_zero_and_output;/*MEM*/
 
-//mux2 u6(branchEnable,nextPCMEM,nextPCBranchMEM,NPC0);/*MEM*/
-mux2 u6(branchEnable,nextPC,nextPCBranchMEM,NPC0);/*MEM*/
+//assign branchEnable = (invertzero_MEM) ? ~branch_zero_and_output : branch_zero_and_output;/*MEM*/
+
+mux2 u6(branchEnable,nextPCMEM,nextPCBranchMEM,NPC0);/*MEM*/
+//mux2 u6(branchEnable,nextPC,nextPCBranchMEM,NPC0);/*MEM*/
 
 mux2 u8(JumpMEM,NPC0,NPC1MEM,NPCValue);/*MEM*/
 
+PCRegWrite u9(clk, reset, 
+            NPCValue, nextPC, 
+            dataStall, controlStall,
+            branchEnable, JumpMEM,
+            PC);
 
-//reg PC_stall_reg;
-//always @(clk) begin
-//        PC_stall_reg <= dataStall & controlStall;
-//end
-//assign PC_stall = PC_stall_reg;
-
-//wire [31:0] Next_PC = (valid_MEM ) ? NPCValue : nextPC;
-//PCRegWrite u9(Next_PC,PC,dataStall,clk,reset);/*MEM*/
-PCRegWrite u9(NPCValue,PC,dataStall,clk,reset);/*MEM*/
+//PCRegWrite u9(NPCValue,PC,dataStall,clk,reset);/*MEM*/
 
 /********************************************************
 ************************* WB ****************************         
@@ -217,13 +215,21 @@ mux2 u16(MemToRegWB,ALUResultWB,outputDataWB,WBData);/*WB, WBData 的声明在 I
 ********************** stall ****************************         
 *********************************************************/
 
+wire is_i_type_EXE, is_r_type_EXE, is_j_type_EXE;
+wire is_i_type_MEM, is_r_type_MEM, is_j_type_MEM;
+wire is_i_type_WB, is_r_type_WB, is_j_type_WB;
+
+DFF u17(clk,is_i_type_ID,is_r_type_ID,is_j_type_ID, is_i_type_EXE, is_r_type_EXE, is_j_type_EXE);
+DFF u18(clk,is_i_type_EXE,is_r_type_EXE,is_j_type_EXE, is_i_type_MEM, is_r_type_MEM, is_j_type_MEM);
+DFF u19(clk,is_i_type_MEM,is_r_type_MEM,is_j_type_MEM, is_i_type_WB, is_r_type_WB, is_j_type_WB);
+
 stallUnit u90(
         //clk, 
         reset,
-        instrWireID,
-        instrWireEX,
-        instrWireMEM,
-        writeRegWireWB,RegWriteWB,instrWireWB,
+        instrWireID, is_i_type_ID, is_r_type_ID,
+        instrWireEX, is_i_type_EXE, is_r_type_EXE,
+        instrWireMEM, is_i_type_MEM, is_r_type_MEM,
+        instrWireWB, is_i_type_WB, is_r_type_WB,
         dataStall);
 
 /*
@@ -247,57 +253,32 @@ Controlstall u92(
         instrWireMEM[31:26],/*instrWireWB[31:26],*/
         controlStall);//agar Dstall 0 nop be vorodi midim
 
+/*
 nopSet u91(
         //clk,
         dataStall,controlStall,
         instrWire,instrWireID,
-        instrWireHazard,instrWireIDhazard);
+        instrWireIF,instrWireEX);
+*/
+reg [31:0]  PC_ID, PC_EX, PC_MEM, PC_WB;
 
-reg [31:0]  PC_Hazard, PC_ID, PC_ID_Hazard, PC_EX, PC_MEM, PC_WB;
-reg is_i_type_EXE, is_r_type_EXE, is_j_type_EXE;
-reg is_i_type_MEM, is_r_type_MEM, is_j_type_MEM;
-reg is_i_type_WB, is_r_type_WB, is_j_type_WB;
+always @(posedge clk)begin
+    if({dataStall, controlStall} == 2'b11) begin
+        PC_ID <= PC;
+    end
+    else if ({dataStall, controlStall} == 2'b10) begin
+        PC_ID <= 32'b1;
+    end
 
-always @(posedge clk) begin
-    is_i_type_EXE <= is_i_type_ID;
-    is_r_type_EXE <= is_r_type_ID;
-    is_j_type_EXE <= is_j_type_ID;
-    
-    is_i_type_MEM <= is_i_type_EXE;
-    is_r_type_MEM <= is_r_type_EXE;
-    is_j_type_MEM <= is_j_type_EXE;
+    if(dataStall) begin
+        PC_EX <= PC_ID;
+    end
+    else begin
+        PC_EX <= 32'b1;
+    end
 
-
-    is_i_type_WB <= is_i_type_MEM;
-    is_r_type_WB <= is_r_type_MEM;
-    is_j_type_WB <= is_j_type_MEM;
-end
-
-always @(posedge clk) begin
-    PC_ID <= PC_Hazard;
-    PC_EX <= PC_ID_Hazard;
     PC_MEM <= PC_EX;
     PC_WB <= PC_MEM;
-end
-
-always @(*)begin
-    if(dataStall==1'b0 && controlStall==1'b0)begin//同时存在数据冒险、控制冒险
-        PC_Hazard = PC_ID;
-        PC_ID_Hazard=32'b1;
-    end
-    else if(dataStall==1'b0 && controlStall==1'b1)begin//数据冒险
-        PC_Hazard = PC_ID;
-        PC_ID_Hazard=32'b1;
-    end
-    else if(dataStall==1'b1 && controlStall==1'b0)begin//控制冒险
-        PC_Hazard=32'b1;
-        PC_ID_Hazard=(PC_ID == 32'b1) ? 32'b1 : PC_ID;
-    end
-    else//无冒险
-    begin
-        PC_Hazard=PC;
-        PC_ID_Hazard=PC_ID;
-    end
 end
 
 endmodule

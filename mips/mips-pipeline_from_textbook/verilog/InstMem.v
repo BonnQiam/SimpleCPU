@@ -2,13 +2,17 @@ module IMemBank(input memread, input [31:0] address, output reg [31:0] readdata)
  
   //reg [31:0] 	mem_array [255:0];
   reg [31:0] 	mem_array [2047:0];
-  reg [31:0]	temp;
+  //reg [31:0]	temp;
+
+  wire [31:0] temp;
+
+  assign temp = (address & 32'hFFFF_FFFC)>>2;
   
   always@(memread, address, mem_array[address])
   begin
     if(memread)begin
-      temp=address>>2;
-      readdata=mem_array[temp];
+      //temp=address>>2;
+	  readdata=mem_array[temp];
     end
     //////////////////////////////////////////////////////////////////////////////////////////////////////// test bench!
 	/* 添加相关代码用于验证检查，另一方面要注意这个是流水线*/

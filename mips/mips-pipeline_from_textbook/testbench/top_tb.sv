@@ -88,7 +88,7 @@ import "DPI-C" function int compare_j (int pc, int instr, int rt, int rt_val);
     assign rt_val_dest_wb    = T1.RegWriteWB ? T1.WBData : rt_val_wb;
     assign rd_val_dest_wb    = T1.RegWriteWB ? T1.WBData : rd_val_wb;
 
-    assign instr_retired_wb  = T1.instr_retired & (T1.instrWireWB != 32'b0) & (T1.instrWireMEM != T1.instrWireWB);
+    assign instr_retired_wb  = (T1.instr_retired & (T1.instrWireWB != 32'b0) & (T1.instrWireMEM != T1.instrWireWB)) | (T1.instrWireWB == 'hc);
 
     assign pc_fetch          = T1.PC;
 
@@ -136,7 +136,8 @@ import "DPI-C" function int compare_j (int pc, int instr, int rt, int rt_val);
     end
 
     always @ (posedge clk_tb) begin
-        $display("Next_PC: %x", T1.NPCValue);
+        $display("NPC_branch_j: %x", T1.NPCValue);
+        $display("NPC_increment_4: %x", T1.nextPC);
 
         $display("pc_fetch: %x", pc_fetch);
         $display("instr_fetch: %x", instr_fetch);
@@ -145,47 +146,31 @@ import "DPI-C" function int compare_j (int pc, int instr, int rt, int rt_val);
         $display("dataStall: %b", T1.dataStall);
         $display("controlStall: %b", T1.controlStall);
 
-        $display("instrWireHazard: %x", T1.instrWireHazard);
+        $display("instrWire: %x", T1.instrWire);
         $display("instrWireID: %x", T1.instrWireID);
-        $display("instrWireIDhazard: %x", T1.instrWireIDhazard);
         $display("instrWireEX: %x", T1.instrWireEX);
         $display("instrWireMEM: %x", T1.instrWireMEM);
         $display("instrWireWB: %x", T1.instrWireWB);
 
-        $display("valid_ID: %b", T1.valid_ID);
-        $display("valid_EX: %b", T1.valid_EX);
-        $display("valid_MEM: %b", T1.valid_MEM);
-        $display("instr_retired: %b", T1.instr_retired);
-        $display("instr_retired_wb: %b", instr_retired_wb);
-
         $display("pc_IF: %x", T1.PC);
-        $display("pc_IF_Harzard: %x", T1.PC_Hazard);
         $display("pc_ID: %x", T1.PC_ID);
-        $display("pc_ID_Harzard: %x", T1.PC_ID_Hazard);
         $display("pc_EX: %x", T1.PC_EX);
         $display("pc_MEM: %x", T1.PC_MEM);
         $display("pc_WB: %x", T1.PC_WB);
         
         $display("==================================");
 
-
-
-
         if (instr_retired_wb & (is_r_type_wb || is_i_type_wb || is_j_type_wb))
         begin
+            $display("is_r_type_wb: %b", is_r_type_wb);
+            $display("is_i_type_wb: %b", is_i_type_wb);
+            $display("is_j_type_wb: %b", is_j_type_wb);
+
             run (1);
             if (is_r_type_wb) 
             begin
                 $display("Test r type");
 
-                $display("%d", rd_wb);
-                $display("%d", rs_wb);
-                $display("%d", rt_wb);
-                $display("%d", rd_val_dest_wb);
-                $display("%d", rs_val_wb);
-                $display("%d", rt_val_wb);
-
-                
                 if (!compare_r (T1.PC_WB, T1.instrWireWB, rd_wb, rs_wb, rt_wb, rd_val_dest_wb, rs_val_wb, rt_val_wb))
                 //if (!compare_r (pc_wb, instr_wb, rd_wb, rs_wb, rt_wb, rd_val_dest_wb, rs_val_wb, rt_val_wb))
                     $fatal(1, "TEST FAILED\n");
@@ -212,7 +197,8 @@ import "DPI-C" function int compare_j (int pc, int instr, int rt, int rt_val);
     always @ (posedge clk_tb) begin
         if (instr_retired_wb)
         begin
-            if ((instr_wb == 'hc) && (T1.u11.regfile[2] == 'ha))
+            if ((T1.instrWireWB == 'hc) && (T1.u11.regfile[2] == 'ha))
+            //if (T1.instrWireWB == 'hc)
             begin
                 $display("TEST PASSED\n");
                 $display("End of simulation reached\n");

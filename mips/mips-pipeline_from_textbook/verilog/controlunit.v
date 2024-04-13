@@ -49,20 +49,37 @@ module controlUnit(
 	begin
 		case(opcode)
 			Rtype:begin//rtype
-				ALUOp	=3'b10;
-				RegDest	=1'b1;
-				RegWrite=1'b1;
-				ALUSrc	=1'b0;
-				MemRead	=1'b0;
-				MemWrite=1'b0;
-				MemToReg=1'b0;
-				Branch	=1'b0;
-				invertzero = 1'b0;
-				Jump	=1'b0;
+				// check syscall
+				if(funct==6'b001100) begin
+					RegDest	=1'b0;
+					RegWrite=1'b0;
+					ALUSrc	=1'b0;
+					MemRead	=1'b0;
+					MemWrite=1'b0;
+					MemToReg=1'b0;
+					Branch	=1'b0;
+					invertzero = 1'b0;
+					Jump	=1'b0;
 
-				is_r_type = 1;
-				is_i_type = 0;
-				is_j_type = 0;
+					is_r_type = 0;
+					is_i_type = 0;
+					is_j_type = 0;
+				end
+				else begin
+					ALUOp	=3'b10;
+					RegDest	=1'b1;
+					RegWrite=1'b1;
+					ALUSrc	=1'b0;
+					MemRead	=1'b0;
+					MemWrite=1'b0;
+					MemToReg=1'b0;
+					Branch	=1'b0;
+					invertzero = 1'b0;
+					Jump	=1'b0;
+					is_r_type = 1;
+					is_i_type = 0;
+					is_j_type = 0;
+				end
 			end
 			lw:begin//lw
 				ALUOp	=3'b00;
@@ -209,7 +226,22 @@ module controlUnit(
 				is_i_type = 1;
 				is_j_type = 0;
 			end
-			// if you want to add new instructions add here
+			default:begin
+				ALUOp	=3'bxxx;
+				RegDest	=1'bx;
+				RegWrite=1'bx;
+				ALUSrc	=1'bx;
+				MemRead	=1'bx;
+				MemWrite=1'bx;
+				MemToReg=1'bx;
+				Branch	=1'bx;
+				invertzero = 1'b0;
+				Jump	=1'b0;
+
+				is_r_type = 0;
+				is_i_type = 0;
+				is_j_type = 0;
+			end
 		endcase
 	end
 

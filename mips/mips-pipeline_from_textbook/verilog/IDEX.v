@@ -89,8 +89,33 @@ begin
 
         ovalid     <= ivalid;
     end
+    else begin
+        oInstr      <= 32'b0;
+        oRegWrite   <= 1'b0;
+        oALUSrc     <= 1'b0;
+        oMemRead    <= 1'b0;
+        oMemWrite   <= 1'b0;
+        oMemToReg   <= 1'b0;
+        oBranch     <= 1'b0;
+        oinvertzero <= 1'b0;
+        oJump       <= 1'b0;
+
+        oA          <= 32'b0;
+        oB          <= 32'b0;
+        ooutSignEXT <= 32'b0;
+        oPC         <= 32'b0;
+        oNPC1       <= 32'b0;
+
+        oALUCtrl    <= 4'b0;
+
+        owriteRegWire   <= 5'b0;
+
+        ovalid      <= 1'b0;
+    end
 
     end
+
 end
+
 endmodule
 

@@ -14,6 +14,11 @@ function void init_imem (string test_name);
     $readmemh (instr_hex_s, instr_hex, 0);
     $readmemh (pc_values_hex_s, pc_val, 0);
 
+    // initialize memory reg [31:0] mem [2047:0] of T1.u0.mem_array
+    for (int i = 0; i < 2048; i++) begin
+        T1.u0.mem_array [i] = 32'h0;
+    end
+
     for (int i = 0; instr_hex[i]; i++) 
     begin
         //$display ("Loading %x at %x\n", instr_hex[i], pc_val[i]);
