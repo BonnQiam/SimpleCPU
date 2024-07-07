@@ -12,7 +12,7 @@ use Getopt::Long qw(GetOptions);
 ### These include $sim_mode, $test_name, and $regress_mode.
 
 my $sim_mode  = 0;
-my $test_name = "alu_ops_stress";
+my $test_name = "textbook";
 my $regress_mode = 0;
 my $help;
 
