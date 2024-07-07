@@ -36,7 +36,7 @@ FILE* pc_hex_val;
 FILE* instr_hex_val;
 
 #define nums_r_type 4
-#define nums_i_type 7
+#define nums_i_type 6
 
 const int funct_val_r_type[nums_i_type] = {
     ADD,        /*ADDU,*/       AND,
@@ -72,7 +72,7 @@ const char* funct_str_r_type[nums_i_type] = {
     "SUBU",       "SYSCALL",    "XOR"
 };*/
 const int opcode_val_i_type[nums_i_type] = {
-    ADDI,       /*ADDIU,*/      ANDI,
+    ADDI,       /*ADDIU,*/      /*ANDI,*/
     BEQ,        /*BGEZ,       BGEZAL,*/
     /*BGTZ,       BLEZ,       BLTZ,*/
     /*BLTZAL,*/     BNE,        /*LB,
@@ -82,7 +82,7 @@ const int opcode_val_i_type[nums_i_type] = {
     /*SLTI,*/ /*       SLTIU,      XORI*/
 };
 const char* opcode_str_i_type[nums_i_type] = {
-    "ADDI",       /*"ADDIU",*/      "ANDI",
+    "ADDI",       /*"ADDIU",*/     /*"ANDI",*/
     "BEQ",        /*"BGEZ",       "BGEZAL",*/
     /*"BGTZ",       "BLEZ",       "BLTZ",*/
     /*"BLTZAL",*/     "BNE",        /*LB,

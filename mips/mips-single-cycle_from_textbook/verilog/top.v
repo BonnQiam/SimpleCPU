@@ -69,8 +69,14 @@ module top(input wire clock, input wire reset);
                           clock,
                           read_data1, read_data2);
 
+  wire [31:0] ALU_Src_Extend;
+
+  assign ALU_Src_Extend = (instruction[`op] == 6'b001101) ? {16'h0, instruction[15:0]}: {{16{instruction[15]}},instruction[15:0]};
+
   mux32_2 alusrc_mux(
-                    {16'h0, instruction[15:0]}/*sign-extend from 16 to 32*/, read_data2, 
+                    //{16'h0, instruction[15:0]}/*sign-extend from 16 to 32*/, 
+                    ALU_Src_Extend,
+                    read_data2, 
                     alusrc, alusrc_mux_output);
 
   ALU alu(aluop_to_alu, read_data1, alusrc_mux_output, alu_result, zero);
@@ -90,7 +96,8 @@ module top(input wire clock, input wire reset);
   mux32_2 branch_mux(branch_adder_mux, pc_adder_mux, 
                     branch_mux_control, 
                     branch_address);
-  adder branch_adder({{16{instruction[15]}},instruction[15:0]}<<2/*sign-extend from 16 to 32 then shift left 2*/, pc_adder_mux,
+  adder branch_adder({{16{instruction[15]}},instruction[15:0]}<<2, /*sign-extend from 16 to 32 then shift left 2*/
+                    pc_adder_mux,
                     branch_adder_mux);
   
   
