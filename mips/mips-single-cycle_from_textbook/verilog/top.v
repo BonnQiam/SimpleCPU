@@ -35,20 +35,13 @@ module top(input wire clock, input wire reset);
   /* Jump */
   wire [31:0] jump_address;
 
-  /* Syscall */
-  wire syscall;
-
   mux32_2 jump_mux(jump_address, branch_address, 
                   jump, 
                   mux_pc);
 
   PC p_counter(mux_pc, clock, reset, address);
 
-  adder pc_incrementer(address, 32'h4, pc_adder_mux);
-
   instruction_memory imem(address, instruction);
-  
-  SYSCALL_controller syscaller(instruction, clock, syscall);
 
   control control_test(instruction[`op], instruction[`function],
                   memtoreg, memwrite, memread,
@@ -65,7 +58,6 @@ module top(input wire clock, input wire reset);
   registers register_file(instruction[`rs], instruction[`rt],
                           regdst_mux_output, memtoreg_mux_output,
                           regwrite, 
-                          syscall, 
                           clock,
                           read_data1, read_data2);
 
@@ -90,6 +82,8 @@ module top(input wire clock, input wire reset);
                       memtoreg_mux_output);
 
   /* Branching logic */
+  adder pc_incrementer(address, 32'h4, pc_adder_mux);
+  
   and1_2 branch_zero_and(branch, zero, branch_zero_and_output);
   // Inverter for detecting when ALU is not zero, used for BNE
   inverter invertzero_inverter(branch_zero_and_output, invertzero, branch_mux_control);

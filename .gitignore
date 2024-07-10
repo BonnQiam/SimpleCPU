@@ -15,4 +15,4 @@ pc_values_hex
 dumpsim
 transcript
 .DS_Store
-mips/hex_gen/hex_gen
+mips/hex_gen/Execute

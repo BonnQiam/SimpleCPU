@@ -3,7 +3,7 @@ module registers(input [25:21] read_reg1,
                 input [15:11] write_reg,
                 input [31:0] write_data,
                 input regwrite,
-                input syscall,
+//                input syscall,
                 input clk,
                 output wire [31:0] read_data1, read_data2);
   //reg [32:0] [32:0] reg_file;
@@ -19,11 +19,13 @@ module registers(input [25:21] read_reg1,
     end
   end
   
+  /*
   always @(posedge syscall) begin
     case (reg_file[`v0])
-      1/*print*/: $strobe("%d", reg_file[`a0]);
-      10/*exit*/: $finish;
+      1: $strobe("%d", reg_file[`a0]);
+      10: $finish;
       default: $display("Got an unsupported syscall code:%h", reg_file[`v0]);
     endcase
   end
+  */
 endmodule

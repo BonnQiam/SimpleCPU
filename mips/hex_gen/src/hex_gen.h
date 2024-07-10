@@ -35,27 +35,27 @@ extern int prev_pc;
 FILE* pc_hex_val;
 FILE* instr_hex_val;
 
-#define nums_r_type 4
+#define nums_r_type 5
 #define nums_i_type 6
 
-const int funct_val_r_type[nums_i_type] = {
+const int funct_val_r_type[nums_r_type] = {
     ADD,        /*ADDU,*/       AND,
     /*DIV,        DIVU,       JALR,*/
     /*JR,         MFHI,       MFLO,*/
     /*MTHI,       MTLO,       MULT,*/
     /*MULTU,*/    /*NOR,*/        OR,
-    /*SLL,*/        /*SLLV,*/       /*SLT,*/
+    /*SLL,*/        /*SLLV,*/       SLT,
     /*SLTU,*/       /*SRA,*/        /*SRAV,*/
     /*SRL,*/        /*SRLV,*/       SUB,
     /*SUBU,*/       /*SYSCALL,*/    /*XOR*/
 };
-const char* funct_str_r_type[nums_i_type] = {
+const char* funct_str_r_type[nums_r_type] = {
     "ADD",        /*"ADDU",*/       "AND",
     /*DIV,        DIVU,       JALR,*/
     /*JR,         MFHI,       MFLO,*/
     /*MTHI,       MTLO,       MULT,*/
     /*MULTU,      "NOR",*/        "OR",
-    /*"SLL",*/        /*SLLV,*/       /*"SLT",*/
+    /*"SLL",*/        /*SLLV,*/       "SLT",
     /*"SLTU",       "SRA",*/        /*SRAV,*/
     /*"SRL",*/        /*SRLV,*/       "SUB",
     /*"SUBU",*/       /*SYSCALL,*/    /*"XOR"*/
