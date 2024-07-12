@@ -83,17 +83,19 @@ module top(input wire clock, input wire reset);
 
   /* Branching logic */
   adder pc_incrementer(address, 32'h4, pc_adder_mux);
-  
-  and1_2 branch_zero_and(branch, zero, branch_zero_and_output);
-  // Inverter for detecting when ALU is not zero, used for BNE
-  inverter invertzero_inverter(branch_zero_and_output, invertzero, branch_mux_control);
-  mux32_2 branch_mux(branch_adder_mux, pc_adder_mux, 
-                    branch_mux_control, 
-                    branch_address);
+
   adder branch_adder({{16{instruction[15]}},instruction[15:0]}<<2, /*sign-extend from 16 to 32 then shift left 2*/
                     pc_adder_mux,
                     branch_adder_mux);
   
+  and1_2 branch_zero_and(branch, zero, branch_zero_and_output);
+  
+  // Inverter for detecting when ALU is not zero, used for BNE
+  inverter invertzero_inverter(branch_zero_and_output, invertzero, branch_mux_control);
+
+  mux32_2 branch_mux(branch_adder_mux, pc_adder_mux, 
+                    branch_mux_control, 
+                    branch_address);
   
   /* Jumping logic */
   jump_address_constructor jump_constructor(instruction[`target], pc_adder_mux[31:28], jump_address);
