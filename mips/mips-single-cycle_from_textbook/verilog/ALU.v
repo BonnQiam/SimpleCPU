@@ -9,7 +9,7 @@ module ALU (
       3'b001: out = a | b;
       3'b010: out = a + b;
       3'b110: out = a - b;
-      3'b111: out = a < b;
+      3'b111: out = a < b;//! 需要修正
       default: out = 32'bxxxxxxxx;
     endcase
     zero = (out == 32'h0000);

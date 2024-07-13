@@ -178,7 +178,6 @@ module controlUnit(
 				is_j_type = 0;
 			end
 			slti:begin//slti
-				// do not support!
 				ALUOp	=3'b111;
 				RegDest	=1'b0;
 				RegWrite=1'b1;

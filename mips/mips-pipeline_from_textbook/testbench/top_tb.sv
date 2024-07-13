@@ -136,6 +136,19 @@ import "DPI-C" function int compare_j (int pc, int instr, int rt, int rt_val);
     end
 
     always @ (posedge clk_tb) begin
+        $display("rd_wb: %x", rd_wb);
+        $display("rs_wb: %x", rs_wb);
+        $display("rt_wb: %x", rt_wb);
+        $display("rd_val_wb: %x", rd_val_wb);
+        $display("rs_val_wb: %x", rs_val_wb);
+        $display("rt_val_wb: %x", rt_val_wb);
+
+
+        $display("outSignEXT: %x", T1.outSignEXT);
+        $display("ALUSrc1: %x", T1.ALUSrc1);
+        $display("readData1EX: %x", T1.readData1EX);
+        $display("ALUResult: %x", T1.ALUResult);
+
         $display("NPC_branch_j: %x", T1.NPCValue);
         $display("NPC_increment_4: %x", T1.nextPC);
 

@@ -35,19 +35,22 @@ always @(*) begin
         // of the instruction in the EX, MEM, or WB stage
         // stall = 1 meaning no stall, stall = 0 meaning stall
 
-        stall_ID_EX_r = IRD[25:21] == IREX[15:11] | IRD[20:16] == IREX[15:11];
-        stall_ID_MEM_r = IRD[25:21] == IRMEM[15:11] | IRD[20:16] == IRMEM[15:11];
-        stall_ID_WB_r = IRD[25:21] == IRWB[15:11] | IRD[20:16] == IRWB[15:11];
-        stall_ID_EX_i = IRD[25:21] == IREX[20:16] | IRD[20:16] == IREX[20:16];
-        stall_ID_MEM_i = IRD[25:21] == IRMEM[20:16] | IRD[20:16] == IRMEM[20:16];
-        stall_ID_WB_i = IRD[25:21] == IRWB[20:16] | IRD[20:16] == IRWB[20:16];
-            
-        stall = ~( stall_ID_EX_r & ((is_i_type_ID | is_r_type_ID) & (is_r_type_EXE)) |
-                 stall_ID_EX_i & (is_i_type_ID | is_r_type_ID) & (is_i_type_EXE) |
-                stall_ID_MEM_r & (is_i_type_ID | is_r_type_ID) & (is_i_type_MEM) |
-                stall_ID_MEM_i & (is_i_type_ID | is_r_type_ID) & (is_i_type_MEM) | 
-                stall_ID_WB_r & (is_i_type_ID | is_r_type_ID) & (is_r_type_WB) |
-                stall_ID_WB_i & (is_i_type_ID | is_r_type_ID) & (is_i_type_WB)
+        stall_ID_EX_r  = (IREX == 32'b0) ? 1'b0 : (IRD[25:21] == IREX[15:11]  | IRD[20:16] == IREX[15:11]);  // instr in EX is R type, and instr in Ex use rs or rt of instr in ID
+        stall_ID_MEM_r = (IRMEM == 32'b0) ? 1'b0 : (IRD[25:21] == IRMEM[15:11] | IRD[20:16] == IRMEM[15:11]); // instr in MEM is R type, and instr in MEM use rs or rt of instr in ID
+        stall_ID_WB_r  = (IRWB == 32'b0) ? 1'b0 : (IRD[25:21] == IRWB[15:11]  | IRD[20:16] == IRWB[15:11]);  // instr in WB is R type, and instr in WB use rs or rt of instr in ID
+
+
+        stall_ID_EX_i  = (IREX == 32'b0) ? 1'b0 : (IRD[25:21] == IREX[20:16]  | IRD[20:16] == IREX[20:16]);  // instr in EX is I type, and instr in Ex use rs or rt of instr in ID
+        stall_ID_MEM_i = (IRMEM == 32'b0) ? 1'b0 : (IRD[25:21] == IRMEM[20:16] | IRD[20:16] == IRMEM[20:16]); // instr in MEM is I type, and instr in MEM use rs or rt of instr in ID
+        stall_ID_WB_i  = (IRWB == 32'b0) ? 1'b0 : (IRD[25:21] == IRWB[20:16]  | IRD[20:16] == IRWB[20:16]);  // instr in WB is I type, and instr in WB use rs or rt of instr in ID
+        
+        
+        stall = ~( stall_ID_EX_r  & (is_i_type_ID | is_r_type_ID) & (is_r_type_EXE) |
+                   stall_ID_MEM_r & (is_i_type_ID | is_r_type_ID) & (is_r_type_MEM) |
+                   stall_ID_WB_r  & (is_i_type_ID | is_r_type_ID) & (is_r_type_WB)  |
+                   stall_ID_EX_i  & (is_i_type_ID | is_r_type_ID) & (is_i_type_EXE) |
+                   stall_ID_MEM_i & (is_i_type_ID | is_r_type_ID) & (is_i_type_MEM) | 
+                   stall_ID_WB_i  & (is_i_type_ID | is_r_type_ID) & (is_i_type_WB)
                 );
     end
     

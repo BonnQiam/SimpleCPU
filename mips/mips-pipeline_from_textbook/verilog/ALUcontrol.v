@@ -14,10 +14,10 @@ always @(*) begin
 		6'b100010:ALUsignal=4'b01;//sub
 		6'b100100:ALUsignal=4'b10;//and
 		6'b100101:ALUsignal=4'b11;//or
-		6'b101010:ALUsignal=4'b101;//stl
+		6'b101010:ALUsignal=4'b101;//slt
 		endcase 
 	3'b001:ALUsignal=4'b0001;//branch
-	3'b000:ALUsignal=4'b0000;//Lw and sw
+	3'b000:ALUsignal=4'b0000;//Lw,sw and addi
 	3'b011:ALUsignal=4'b0010;//andi
 	3'b100:ALUsignal=4'b0011;//ori
 	3'b111:ALUsignal=4'b0101; //slti

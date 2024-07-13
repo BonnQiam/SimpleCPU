@@ -529,7 +529,7 @@ void execute_i (unsigned int opcode, uint32_t rs, uint32_t rt, int imm) {
         case (SLTI): //SLTI
             shift_val = shift_const(16);
             sign = (imm & 0x8000)>>15 ? 1 : 0;
-            imm = (sign) ? (imm | shift_val) : imm;
+            imm = (sign) ? (imm | shift_val) : imm; // imm is sign extended, if sign bit is 1 then extend with 1s, else extend with 0s
             printf ("[%d] PC:%.8x\tINSTR:%.8x\t SLTI R%-2d, R%-2d, 0x%-32x\n", 
                 instr_count,
                 CURRENT_STATE.PC,
